@@ -12,3 +12,12 @@ app.use(router)
   .use(store)
   .use(ViewUIPlus)
   .mount('#app')
+
+window.app = app
+window.isEmpty = function (str) {
+  if (!str) {
+    return true
+  }
+
+  return str && str.length === 0
+}
