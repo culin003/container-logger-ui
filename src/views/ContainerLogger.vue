@@ -1,5 +1,5 @@
 <style>
-.layout{
+.layout {
   border: 1px solid #d7dde4;
   background: #f5f7f9;
   position: relative;
@@ -10,7 +10,8 @@
   display: flex;
   justify-content: center;
 }
-.layout-logo{
+
+.layout-logo {
   width: 100px;
   height: 30px;
   background: #5b6270;
@@ -20,7 +21,8 @@
   top: 15px;
   left: 20px;
 }
-.layout-nav{
+
+.layout-nav {
   width: 420px;
   margin: 0 20px 0 auto;
 }
@@ -48,18 +50,15 @@
 import 'xterm/css/xterm.css'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-import { AttachAddon } from 'xterm-addon-attach'
 import GLOBAL from '../api/GlobalVariable'
 
 export default {
   name: 'ContainerLogger',
-  data(){
-    return {
-
-    }
+  data() {
+    return {}
   },
   methods: {
-    closeXterm () {
+    closeXterm() {
       window.close()
     }
   },
@@ -69,22 +68,33 @@ export default {
       convertEol: true,
       cursorBlink: true,
       theme: {
-        foreground: "#ECECEC", //字体
-        background: "#000000", //背景色
-        cursor: "help", //设置光标
+        foreground: '#ECECEC', //字体
+        background: '#000000', //背景色
+        cursor: 'help', //设置光标
         lineHeight: 30,
       }
     })
+
     const fitAddon = new FitAddon()
     const socket = new WebSocket(`${GLOBAL.BASE_WS}${this.$route.query.sid}/ws`)
-    const attachAddon = new AttachAddon(socket)
     terminal.loadAddon(fitAddon)
-    terminal.loadAddon(attachAddon)
-    terminal.open(document.getElementById("loggerView"))
+    terminal.open(document.getElementById('loggerView'))
     fitAddon.fit()
     window.onresize = () => {
       fitAddon.fit()
     }
+
+    socket.onmessage = e => {
+      if (e.data === '{"type": "PONG"}') {
+        console.log(e.data)
+      } else {
+        terminal.writeln(e.data)
+      }
+    }
+
+    const ping = setInterval(() => {
+      socket.send(JSON.stringify({ 'type': 'PING' }))
+    }, 10000)
 
   }
 }
